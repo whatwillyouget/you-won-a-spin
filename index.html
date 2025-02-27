@@ -58,10 +58,23 @@
             cursor: pointer;
         }
         button {
-            margin-top: 10px;
+            all: unset;
+            display: inline-block;
+            text-align: center;
+            background: #007bff;
+            color: white; 
             padding: 10px 20px;
             font-size: 16px;
+            border-radius: 5px;
+            border: none;
             cursor: pointer;
+            width: auto;
+            min-width: 150px;
+            box-shadow: none; 
+        }
+
+        button:active {
+            opacity: 0.8;
         }
         .confetti {
             position: fixed;
@@ -82,7 +95,7 @@
     <div class="popup" id="popup">
         <h2>Congratulations!</h2>
         <p id="result"></p>
-        <img id="imgresult" width="480px">
+        <img id="imgresult" width="20%">
         <br>
         <button onclick="window.location.reload();" id="claimButton">Claim Reward</button>
     </div>
@@ -99,7 +112,7 @@
 
         const items = ["0", "1", "2", "3", "4", "5"];
         const itemsnames = ["Fully Paid Vacation", "iPhone 16", "Nintendo Switch", "Free Foot Long From Subway", "PlayStation 5", "1 Million Dollars"];
-        const itemsimages = ["/you-won-a-spin/images/paid.png", "/you-won-a-spin/images/iphone16.png", "/you-won-a-spin/images/switch.png", "/you-won-a-spin/images/footlong.png", "/you-won-a-spin/images/playstation.png", "/you-won-a-spin/images/money.png"];
+        const itemsimages = ["images/paid.png", "images/iphone16.png", "images/switch.png", "images/footlong.png", "images/playstation.png", "images/money.png"];
         const colors = ["#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff", "#ff9f40"];
         const arc = (2 * Math.PI) / items.length;
 
@@ -146,7 +159,7 @@
 
                 const img = images[i];
                 if (img) {
-                    const imageSize = 40;
+                    const imageSize = 60;
                     ctx.drawImage(img, -imageSize / 2, -imageSize / 2, imageSize, imageSize);
                 } else {
                     console.error(`Image not loaded for index ${i}`);
@@ -173,6 +186,7 @@
             }, 4000);
             const spinButton = document.getElementById("spin");
             spinButton.disabled = true;
+            spinButton.style.opacity = 0.8;
         }
 
         function closePopup() {
