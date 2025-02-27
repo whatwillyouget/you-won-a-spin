@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wheel Spinner</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+        }
+        .wheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 5px solid #333;
+            position: relative;
+            transition: transform 4s ease-out;
+        }
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 20px solid red;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .popup button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .confetti {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <canvas class="wheel" id="wheel" width="300" height="300"></canvas>
+    </div>
+    <br>
+    <button onclick="spinWheel()" id="spin">Spin For Reward</button>
+    <div class="popup" id="popup">
+        <h2>Congratulations!</h2>
+        <p id="result"></p>
+        <img id="imgresult" width="480px">
+        <br>
+        <button onclick="window.location.reload();" id="claimButton">Claim Reward</button>
+    </div>
+    <canvas class="confetti" id="confetti"></canvas>
+    <script>
+        const wheel = document.getElementById("wheel");
+        const ctx = wheel.getContext("2d");
+        const popup = document.getElementById("popup");
+        const resultText = document.getElementById("result");
+        const imgresult = document.getElementById("imgresult");
+        const confettiCanvas = document.getElementById("confetti");
+        const confettiCtx = confettiCanvas.getContext("2d");
+        let animationFrame;
+
+        const items = ["0", "1", "2", "3", "4", "5"];
+        const itemsnames = ["Fully Paid Vacation", "iPhone 16", "Nintendo Switch", "Free Foot Long From Subway", "PlayStation 5", "1 Million Dollars"];
+        const itemsimages = ["/images/paid.png", "/images/iphone16.png", "/images/switch.png", "/images/footlong.png", "/images/playstation.png", "/images/money.png"];
+        const colors = ["#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff", "#ff9f40"];
+        const arc = (2 * Math.PI) / items.length;
+
+        let rotationOffset = 238;
+        const images = [];
+
+        loadImages();
+
+        function loadImages() {
+            let loadedImagesCount = 0;
+            itemsimages.forEach((src, index) => {
+                const img = new Image();
+                img.src = src;
+                img.onload = () => {
+                    images[index] = img;
+                    loadedImagesCount++;
+                    if (loadedImagesCount === itemsimages.length) {
+                        drawWheel();
+                    }
+                };
+                img.onerror = () => {
+                    console.error(`Failed to load image: ${src}`);
+                };
+            });
+        }
+
+        function drawWheel() {
+            ctx.clearRect(0, 0, wheel.width, wheel.height);
+            let offsetRadians = (rotationOffset * Math.PI) / 180;
+
+            for (let i = 0; i < items.length; i++) {
+                ctx.beginPath();
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.moveTo(150, 150);
+                ctx.arc(150, 150, 150, i * arc + offsetRadians, (i + 1) * arc + offsetRadians);
+                ctx.lineTo(150, 150);
+                ctx.fill();
+                ctx.closePath();
+
+                const angle = i * arc + arc / 2 + offsetRadians;
+                ctx.save();
+                ctx.translate(150 + Math.cos(angle) * 100, 150 + Math.sin(angle) * 100);
+                ctx.rotate(angle + Math.PI / 2);
+
+                const img = images[i];
+                if (img) {
+                    const imageSize = 40;
+                    ctx.drawImage(img, -imageSize / 2, -imageSize / 2, imageSize, imageSize);
+                } else {
+                    console.error(`Image not loaded for index ${i}`);
+                }
+                ctx.restore();
+            }
+        }
+
+        function spinWheel() {
+            let selectedIndex = Math.floor(Math.random() * items.length);
+            // let selectedIndex = 3;
+            let targetDegree = -(selectedIndex * (360/items.length));
+            let extraRotations = 10 * 360;
+            let finalDegree = extraRotations + targetDegree;
+
+            wheel.style.transition = "transform 4s ease-out";
+            wheel.style.transform = `rotate(${finalDegree}deg)`;
+
+            setTimeout(() => {
+                resultText.innerText = itemsnames[selectedIndex];
+                imgresult.src = itemsimages[selectedIndex];
+                popup.style.display = "block";
+                startConfetti();
+            }, 4000);
+            const spinButton = document.getElementById("spin");
+            spinButton.disabled = true;
+        }
+
+        function closePopup() {
+            popup.style.display = "none";
+            stopConfetti();
+        }
+
+        function startConfetti() {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+            let particles = [];
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height,
+                    r: Math.random() * 5 + 2,
+                    d: Math.random() * 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                });
+            }
+            function drawConfetti() {
+                confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                for (let p of particles) {
+                    confettiCtx.beginPath();
+                    confettiCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    confettiCtx.fillStyle = p.color;
+                    confettiCtx.fill();
+                    p.y += p.d;
+                    if (p.y > confettiCanvas.height) p.y = 0;
+                }
+                animationFrame = requestAnimationFrame(drawConfetti);
+            }
+            drawConfetti();
+        }
+
+        function stopConfetti() {
+            cancelAnimationFrame(animationFrame);
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        }
+    </script>
+</body>
+</html>
