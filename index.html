@@ -169,8 +169,8 @@
         }
 
         function spinWheel() {
-            // let selectedIndex = Math.floor(Math.random() * items.length);
-            let selectedIndex = 3;
+            let selectedIndex = Math.floor(Math.random() * items.length);
+            // let selectedIndex = 3;
             let targetDegree = -(selectedIndex * (360/items.length));
             let extraRotations = 10 * 360;
             let finalDegree = extraRotations + targetDegree;
